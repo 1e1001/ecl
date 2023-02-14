@@ -1,0 +1,73 @@
+# syntax
+
+[...] = 0 / 1
+{...} = 1+
+?...? = special
+
+file =
+  { s item } s
+
+item =
+	quotable
+	item s '[' s { item s } ']'
+	item s '\' s quotable
+	item s '\\' s quotable
+
+s =
+	[{ space }]
+
+space =
+  space-char
+	'#;' item
+	';' { ? byte ? } newline
+
+space-char =
+  '\0'..='\x09'
+	'\x0E'..=' '
+	'\u00A0'
+	'\u1680'
+	'\u180E'
+	'\u2000'..='\u200B'
+	'\u202F'
+	'\u205F'
+	'\u3000'
+	'\uFEFF'
+	newline
+
+newline =
+	'\x0A'..='\x0D'
+	'\u0085'
+	'\u2028'
+	'\u2029'
+
+reserved =
+  space-char
+	/[[]{}()\#;"']/
+
+quotable =
+	literal
+	'(' s item s [ '.' item ] ')'
+	'{' s { item s } '}'
+	'#' s quotable
+	'#\' hash
+
+hash =
+	't' space
+	'f' space
+	ident '\' s quotable
+	ident '#'
+
+literal =
+	path
+	string
+
+path =
+	ident [{ s '\' s quotable }]
+
+// '.' is invalid in most contexts
+ident =
+	{ ? non-reserved char ? }
+
+string =
+	'\'' ? marker ? '\'' ? lazy raw bytes ? '\'' ? marker ? '\''
+	'"' ? raw bytes ? '"'
