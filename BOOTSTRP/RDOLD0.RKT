@@ -76,6 +76,8 @@
 
 (define RESERVED_CHARS (cons #f (bytes->list #"[]{}()\\#;\"'")))
 
+{define (print-expr)}
+
 (define-read (read-file parser)
   (let loop ([result null])
     (read-spaces parser)
@@ -154,8 +156,7 @@
      (Parser-next! parser)
      (define res (read-list parser read-item #x7D))
      (SHExpr (SSpan start (Parser-cursor parser)) res)]
-    [#x22 (error "string quote")]
-    [#x27 (error "string marked")]
+    [#x22 (error "string")]
     [_
      (define res (read-path parser))
      (define first (car res))
@@ -202,4 +203,4 @@
 (define-read (read-todo parser)
   (error "todo: read-todo"))
 
-(writeln (read-file (Parser 0 (file->bytes "input.ecl"))))
+(print-expr (read-file (Parser 0 (file->bytes "INPUT.ECL"))))

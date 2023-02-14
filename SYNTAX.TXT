@@ -4,6 +4,41 @@
 {...} = 1+
 ?...? = special
 
+# current
+
+reserved chars:
+  () - s-expr
+  [] - m-expr
+  {} - s-expr 2
+  # - non-identifier prefix, only a starting delimiter
+  \ - path access / special id
+  ; - comment
+  " - string
+  ' - quote
+
+item =
+	quotable
+	item '[' [{ item }] ']'
+	item '\' ident
+	item '\' quotable
+	item '\#' quotable
+	''' quotable
+
+quotable =
+	'\' ; %ref
+	'(' [{ item }] ')'
+	'{' [{ item }] '}'
+	'#' ident '=' quotable
+	literal
+
+literal =
+	ident
+	'#t'
+	'#f'
+	'#' ident '#'
+
+# old0
+
 file =
   { s item } s
 
