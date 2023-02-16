@@ -30,7 +30,7 @@
     [(string? a) (-%ref (string-ref a (car b)) (cdr b))]
     [(vector? a) (-%ref (vector-ref a (car b)) (cdr b))])}
 
-{define (%hash . items)
+{define (-%hash . items)
   (define res (make-hash))
   {define (inner items)
     (cond
