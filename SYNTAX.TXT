@@ -21,7 +21,7 @@ item =
 	item '[' [{ item }] ']'
 	item '\' ident
 	item '\' quotable
-	item '\#' quotable
+	item '\\' quotable
 	''' quotable
 
 quotable =
@@ -29,6 +29,7 @@ quotable =
 	'(' [{ item }] ')'
 	'{' [{ item }] '}'
 	'#' ident '=' quotable
+	'#[' item ']'
 	literal
 
 literal =
@@ -36,6 +37,9 @@ literal =
 	'#t'
 	'#f'
 	'#' ident '#'
+
+ident =
+  { ? non-reserved char ? }
 
 # old0
 
