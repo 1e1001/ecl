@@ -1,18 +1,18 @@
 #lang racket/base
+; Run fully-expanded ecl in racket, with enough standard library to run RDEXP.RKT
 (require racket/file
          (for-syntax racket/base
                      racket/string))
 
 (provide
  #%module-begin #%app #%top #%datum
- define lambda
  (rename-out
-  [-println println]
-  [-print print]
   [-%read-file %read-file]
   [-%hash %hash]
   [-%ref %ref]
-  [letrec let]
+  [define /core/define]
+  [lambda /core/fn]
+  [letrec /core/let]
   [list %list]
   [vector %tup]))
 
