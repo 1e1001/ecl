@@ -1,5 +1,8 @@
 //! syntax:
 //! ```text
+//! item = tight
+//!      | item s '[' s [{ item s }] ']'
+//!      | item s '\' s tight
 //! tight = ident
 //!       | ''' marker ''' string ''' marker '''
 //!       | '(' s [{ item s }] ')'
@@ -8,9 +11,6 @@
 //!       | '#' s tight
 //!       | '\' s ident s '#' s tight
 //!       | '\' s ident s '\'
-//! item = tight
-//!      | item s '[' s [{ item s }] ']'
-//!      | item s '\' s tight
 //! reserved: (){}[]#;'\
 //! s = [{ s-inner }]
 //! s-inner = space
@@ -33,8 +33,8 @@
 //!       | '\u{FEFF}'
 //! ```
 
-use crate::id::{Id, id};
-use crate::syntax::{Expr, Source, ListType};
+use crate::id::{id, Id};
+use crate::syntax::{Expr, ListType, Source};
 
 #[derive(Debug)]
 pub enum ParseError {
@@ -94,15 +94,13 @@ impl Parser {
 					| '\u{3000}'
 					| '\u{FEFF}'),
 				)) => self.adv(c.len_utf8()),
-				Some(Some(';')) => {
-					loop {
-						match self.peek_utf8() {
-							Some(Some('\x0A'..='\x0D' | '\u{85}' | '\u{2028}' | '\u{2029}')) => break,
-							None => break,
-							_ => self.adv(1),
-						}
+				Some(Some(';')) => loop {
+					match self.peek_utf8() {
+						Some(Some('\x0A'..='\x0D' | '\u{85}' | '\u{2028}' | '\u{2029}')) => break,
+						None => break,
+						_ => self.adv(1),
 					}
-				}
+				},
 				Some(Some('#')) if self.peek(1) == Some(b';') => {
 					self.adv(2);
 					drop(self.read_tight()?);
@@ -131,7 +129,19 @@ impl Parser {
 		loop {
 			match self.peek(0) {
 				None => return Err(ParseError::UnexpectedEof),
-				Some(0..=b' ' | b'(' | b')' | b'[' | b']' | b'{' | b'}' | b'#' | b';' | b'\'' | b'\\') => break,
+				Some(
+					0..=b' '
+					| b'('
+					| b')'
+					| b'['
+					| b']'
+					| b'{'
+					| b'}'
+					| b'#'
+					| b';'
+					| b'\''
+					| b'\\',
+				) => break,
 				Some(c) => {
 					res.push(c);
 					self.adv(1);
@@ -157,13 +167,16 @@ impl Parser {
 				}
 				self.adv(1);
 				Ok(res)
-			},
+			}
 			Some(b'{') => Ok(Expr::List(ListType::Curly, self.read_list(b'}')?)),
 			Some(b'#') => {
 				self.adv(1);
 				self.read_space()?;
-				Ok(Expr::list(vec![Expr::Ident(id("%cons")), self.read_tight()?]))
-			},
+				Ok(Expr::list(vec![
+					Expr::Ident(id("%cons")),
+					self.read_tight()?,
+				]))
+			}
 			Some(b'\'') => {
 				self.adv(1);
 				// welcome to cursed parsing land!
@@ -176,13 +189,16 @@ impl Parser {
 							if c == b'\'' {
 								break;
 							}
-						},
+						}
 						None => return Err(ParseError::UnexpectedEof),
 					}
-				};
+				}
 				let mut data = Vec::new();
 				while {
-					let slice = self.source.data.get(self.cursor..self.cursor + marker.len());
+					let slice = self
+						.source
+						.data
+						.get(self.cursor..self.cursor + marker.len());
 					slice.is_some() && slice != Some(&marker)
 				} {
 					data.push(self.peek(0).unwrap());
@@ -193,7 +209,7 @@ impl Parser {
 					return Err(ParseError::UnexpectedEof);
 				}
 				Ok(Expr::String(id(data)))
-			},
+			}
 			Some(b'\\') => Err(ParseError::NoRecursion),
 			Some(_) => Ok(Expr::Ident(self.read_ident()?)),
 			None => Err(ParseError::UnexpectedEof),
@@ -230,8 +246,8 @@ impl Parser {
 
 pub fn parse_source(source: Source) -> Result<Vec<Expr>, (ParseError, usize)> {
 	let mut parser = Parser { source, cursor: 0 };
-	match parser .read_file() {
+	match parser.read_file() {
 		Ok(v) => Ok(v),
-		Err(e) => Err((e, parser.cursor))
+		Err(e) => Err((e, parser.cursor)),
 	}
 }

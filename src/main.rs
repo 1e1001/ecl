@@ -5,10 +5,10 @@ use syntax::Source;
 
 use crate::syntax::Expr;
 
-mod id;
-mod syntax;
-mod parser;
 mod eval;
+mod id;
+mod parser;
+mod syntax;
 
 fn parse(source: Source) -> Vec<Expr> {
 	match parser::parse_source(source) {
@@ -16,13 +16,13 @@ fn parse(source: Source) -> Vec<Expr> {
 		Err(e) => {
 			println!("error: {e:?}");
 			panic!("parse error");
-		},
+		}
 	}
 }
 
 fn main() {
 	let path = std::env::args().nth(1).unwrap();
-	let file = Source::new(id(path.as_bytes()), id(std::fs::read(path).unwrap()));
+	let file = Source::new(id(std::fs::read(path).unwrap()));
 	let parsed = parse(file);
 	println!("{:?}", eval::eval(&parsed));
 }
@@ -56,7 +56,7 @@ mod tests {
 				Expr::List(ListType::Curly, vec![$(sexp!($tt)),*])
 			};
 		}
-		let parsed = parse(Source::new(id("<test>"), id(r##"
+		let parsed = parse(Source::new(id(r##"
 			ident
 			''string''
 			'raw'raw'raww'str'ra'ing'raw'

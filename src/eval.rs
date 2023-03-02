@@ -22,9 +22,9 @@ impl ValueRef {
 	}
 }
 impl fmt::Debug for ValueRef {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", (*self.0).borrow())
-    }
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{:?}", (*self.0).borrow())
+	}
 }
 
 pub type ExtFn = dyn Fn(&'_ [Expr], Rc<Scope>) -> Result<ValueRef, EvalError>;
@@ -61,7 +61,8 @@ impl PartialEq for Value {
 			(Self::Function(l0, l1, l2), Self::Function(r0, r1, r2)) => {
 				l0 == r0 && l1 == r1 && l2 == r2
 			}
-			(Self::Extern(l), Self::Extern(r)) => Rc::ptr_eq(l, r),
+			// no ptr eq on dyn :(
+			(Self::Extern(_), Self::Extern(_)) => false,
 			_ => false,
 		}
 	}
@@ -85,10 +86,12 @@ impl Scope {
 		self.vars.borrow_mut().insert(name, value);
 	}
 	fn lookup(&self, name: &Id) -> Option<ValueRef> {
-		self.vars.borrow().get(name).cloned().or_else(|| if let Some(parent) = &self.parent {
-			parent.lookup(name)
-		} else {
-			None
+		self.vars.borrow().get(name).cloned().or_else(|| {
+			if let Some(parent) = &self.parent {
+				parent.lookup(name)
+			} else {
+				None
+			}
 		})
 	}
 	fn base() -> Rc<Self> {
@@ -120,7 +123,8 @@ impl Scope {
 }
 
 pub fn eval_exprs(body: &[Expr], scope: Rc<Scope>) -> Result<ValueRef, EvalError> {
-	let res = body.into_iter()
+	let res = body
+		.iter()
 		.map(|expr| match expr {
 			Expr::String(v) => Ok(ValueRef::new(Value::String(v.clone()))),
 			Expr::Ident(v) => match &v[..] {
@@ -128,7 +132,7 @@ pub fn eval_exprs(body: &[Expr], scope: Rc<Scope>) -> Result<ValueRef, EvalError
 				b"false" => Ok(ValueRef::new(Value::Bool(false))),
 				b"nul" => Ok(ValueRef::new(Value::Nul)),
 				_ => {
-					if let Some(v) = std::str::from_utf8(&v)
+					if let Some(v) = std::str::from_utf8(v)
 						.ok()
 						.and_then(|v| <i128 as std::str::FromStr>::from_str(v).ok())
 					{
@@ -155,10 +159,11 @@ pub fn eval_exprs(body: &[Expr], scope: Rc<Scope>) -> Result<ValueRef, EvalError
 						}
 						let inner_scope = inner_scope.clone().child();
 						for (arg, val) in args.iter().zip(body[1..].iter()) {
-							inner_scope.set_var(arg.clone(), eval_exprs(&[val.clone()], scope.clone())?);
+							inner_scope
+								.set_var(arg.clone(), eval_exprs(&[val.clone()], scope.clone())?);
 						}
 						eval_exprs(&body[1..], inner_scope)
-					},
+					}
 					Value::Extern(f) => f(&body[1..], scope.clone()),
 				};
 				res

@@ -4,12 +4,11 @@ use crate::id::Id;
 
 #[derive(Clone, Debug)]
 pub struct Source {
-	pub name: Id,
 	pub data: Id,
 }
 impl Source {
-	pub fn new(name: Id, data: Id) -> Self {
-		Self { name, data }
+	pub fn new(data: Id) -> Self {
+		Self { data }
 	}
 }
 
@@ -40,7 +39,7 @@ impl fmt::Debug for Expr {
 			Self::Ident(v) => write!(f, "{v}"),
 			Self::List(t, v) => {
 				match t {
-					ListType::Paren => {},
+					ListType::Paren => {}
 					ListType::Bracket => f.write_str("#;b")?,
 					ListType::Curly => f.write_str("#;c")?,
 					ListType::Special => f.write_str("#;s")?,
