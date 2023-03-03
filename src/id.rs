@@ -19,7 +19,7 @@ impl ops::Deref for Id {
 	}
 }
 impl fmt::Debug for Id {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		use std::fmt::Write;
 		let needs_escape = std::str::from_utf8(self)
 			.map(|v| v.chars().any(|v| matches!(v, '\0'..='\x1F' | '\\' | '\'')))
@@ -54,7 +54,7 @@ impl fmt::Debug for Id {
 	}
 }
 impl fmt::Display for Id {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		f.write_str(&String::from_utf8_lossy(self))
 	}
 }

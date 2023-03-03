@@ -32,7 +32,7 @@ impl Expr {
 	}
 }
 impl fmt::Debug for Expr {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		use std::fmt::Write;
 		match self {
 			Self::String(v) => write!(f, "{v:?}"),
