@@ -3,22 +3,12 @@
 use id::id;
 use syntax::Source;
 
-use crate::syntax::Expr;
+use crate::parser::parse;
 
 mod eval;
 mod id;
 mod parser;
 mod syntax;
-
-fn parse(source: Source) -> Vec<Expr> {
-	match parser::parse_source(source) {
-		Ok(v) => v,
-		Err(e) => {
-			println!("error: {e:?}");
-			panic!("parse error");
-		}
-	}
-}
 
 fn main() {
 	let path = std::env::args().nth(1).unwrap();
@@ -32,7 +22,7 @@ mod tests {
 	#[test]
 	fn all_parse_test() {
 		use super::*;
-		use crate::syntax::ListType;
+		use crate::syntax::{Expr, ListType};
 		macro_rules! sexp {
 			($id:ident) => {
 				Expr::Ident(id(stringify!($id)))

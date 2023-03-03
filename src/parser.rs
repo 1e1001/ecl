@@ -244,10 +244,13 @@ impl Parser {
 	}
 }
 
-pub fn parse_source(source: Source) -> Result<Vec<Expr>, (ParseError, usize)> {
+pub fn parse(source: Source) -> Vec<Expr> {
 	let mut parser = Parser { source, cursor: 0 };
 	match parser.read_file() {
-		Ok(v) => Ok(v),
-		Err(e) => Err((e, parser.cursor)),
+		Ok(v) => v,
+		Err(e) => {
+			println!("error at {}: {e:?}", parser.cursor);
+			panic!("parse error");
+		}
 	}
 }
