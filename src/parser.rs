@@ -129,6 +129,7 @@ impl Parser {
 		loop {
 			match self.peek(0) {
 				None => return Err(ParseError::UnexpectedEof),
+				// TODO: add a check for utf-8 whitespace
 				Some(
 					0..=b' '
 					| b'('
