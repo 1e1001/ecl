@@ -1,7 +1,5 @@
-[package]
-name = "ecl"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies.ahash]
-version = "0.8.3"
+[workspace]
+resolver = "2"
+members = [
+	"bootstrap"
+]
