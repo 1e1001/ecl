@@ -7,7 +7,7 @@
 //!       | ''' marker ''' string ''' marker '''
 //!       | '(' s [{ item s }] ')'
 //!       | '{' s [{ item s }] '}'
-//!       | '[' s item s ']'
+//!       | '[' s item s ']' ; not allowed in item or after item\
 //!       | '#' s tight
 //!       | '\' s ident s '#' s tight
 //!       | '\' s ident s '\'
@@ -158,6 +158,7 @@ impl Parser {
 	fn read_tight(&mut self) -> Result<Expr, ParseError> {
 		match self.peek(0) {
 			Some(b'(') => Ok(Expr::List(ListType::Paren, self.read_list(b')')?)),
+			// TODO: prevent this in ambiguous / useless contexts, see module docs
 			Some(b'[') => {
 				self.adv(1);
 				self.read_space()?;

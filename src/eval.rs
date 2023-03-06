@@ -19,7 +19,7 @@ pub enum Value {
 	List(Rc<RefCell<Vec<Value>>>),
 	Map(Rc<RefCell<AHashMap<Value, Value>>>),
 	Function(Rc<(Rc<Scope>, Vec<Id>, Vec<Expr>)>),
-	Extern(Rc<ExtFn>),
+	ExtFn(Rc<ExtFn>),
 }
 
 impl std::hash::Hash for Value {
@@ -33,7 +33,7 @@ impl std::hash::Hash for Value {
 			Value::List(v) => Rc::as_ptr(v).hash(state),
 			Value::Map(v) => Rc::as_ptr(v).hash(state),
 			Value::Function(v) => Rc::as_ptr(v).hash(state),
-			Value::Extern(v) => Rc::as_ptr(v).hash(state),
+			Value::ExtFn(v) => Rc::as_ptr(v).hash(state),
 		}
 	}
 }
@@ -47,7 +47,7 @@ impl fmt::Debug for Value {
 			Self::List(v) => write!(f, "{v:?}"),
 			Self::Map(v) => write!(f, "{v:?}"),
 			Self::Function(data) => write!(f, "<fn {data:p}>"),
-			Self::Extern(v) => write!(f, "<fn! {v:p}>"),
+			Self::ExtFn(v) => write!(f, "<fn! {v:p}>"),
 		}
 	}
 }
@@ -61,7 +61,7 @@ impl PartialEq for Value {
 			(Self::Map(l), Self::Map(r)) => Rc::ptr_eq(l, r),
 			(Self::Function(l), Self::Function(r)) => Rc::ptr_eq(l, r),
 			// clippy says no ptr eq on dyn, i don't care
-			(Self::Extern(l), Self::Extern(r)) => Rc::ptr_eq(l, r),
+			(Self::ExtFn(l), Self::ExtFn(r)) => Rc::ptr_eq(l, r),
 			_ => false,
 		}
 	}

@@ -1,0 +1,88 @@
+# types!
+
+every value is callable
+e.g. maps:
+	#{#a 1}\#get[#a]
+	#{#a 1}\#del![#a]
+expands to
+	((<map #a 1> #get) #a)
+	((<map #a 1> #del!) #a)
+calling is set to access methods, to access trait methods, use
+	Indexable\#{#a 1}\#index[#a]
+i.e. calling the trait with the value
+
+!! how to make a type definition
+what even is a type?
+do user-defined types even exist?
+	isn't everything just a function anyways
+	if that's the case how do you check the type, or traits
+	metadata protocol?
+"types" are just functions with metadata
+	what is metadata
+		metadata keys are also instances of a types
+		types are also instances of a Type type!
+instance of a type is just a value and the type
+how to traits?
+	opt-in for types + default "fallback" impl that can check if the type implements some other traits
+		problem: runtime errors!
+		solution: compile-time check as part of macros
+macros can act as const-eval
+
+(def MyType Type\{
+	#cons (fn #;...)
+	#call {
+		#get (fn #;...)
+		#;...
+	}
+	Indexable {
+		#get (fn #;...)
+	}
+})
+
+actual example: silly os uart
+; with core\typed there'll be macros that'll also implement appropriate protocols
+
+(def Uart Type\{
+	#cons identity
+	Write {
+		#write-str
+		(fn (self str)
+			; ti-val[Type][value] -> gets the inner value, requiring that Type is defined in the same module
+			(def addr ti-val\Uart[self])
+			{for byte str\#iter[]
+				addr\#write-volatile[byte]})
+	}
+})
+(def global-uart Uart[Pointer[0x10000000]])
+Write[global-uart]\#write-str[''Hello, World!'']
+
+# naming convention
+- var-name = functions, variables, modules
+- TypeName = types, traits
+- meta_name = metadata
+- CONST_NAME = constant
+
+# how does the lang (outdated)
+
+a file
+	(use core\typed)
+	(define factorial[n[IntUnsigned]][->[IntUnsigned]]
+		(if (<= n 1)
+			1
+			(* n factorial[(sub1 n)])))
+gets read into an s-expression
+	(%module <module-info>
+  	(use (%ref core (%sym typed)))
+		(define ((factorial (n IntUnsigned)) (-> IntUnsigned))
+			(if (<= n 1)
+				1
+				(* n (factorial (sub1 n))))))
+prephase resolves identifiers and expands macros
+	expanding macros requires running an interpreter on any code inside %comp,
+	this code is run though this process recursively until the lowest layer has no syntax
+		have to compile to a local interpreter - passing objects between instances + delaying execution
+postphase fixes unresolved identifiers
+
+compiler assisted lints - typechecking, readability, etc.
+	each expression is associated with some number of "tags", each corresponding to a type
+		macros or full-file-processors can use those tags to run analysis and/or modify the expression
