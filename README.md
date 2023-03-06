@@ -7,12 +7,12 @@ it's a cursed lisp, and it's made by me
 current progress:
 - [x] the idea
 - [ ] bootstrap
-	- [ ] reader
-	- [ ] interpreter
+	- [x] reader
+	- [ ] evaluator
 - [ ] actual lang
-	- [ ] reading
-	- [ ] interpreter
-	- [ ] recursive macros
+	- [ ] reader
+	- [ ] evaluator
+	- [ ] macro expansion
 	- [ ] compiler
 	- [ ] ?
 	- [ ] profit
